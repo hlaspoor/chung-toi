@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chung Toi</title>
+</head>
+<body>
+  <main class="app">
+    <h1 class="app-title">
+      <img src="/logo.svg" alt="Chung Toi">
+    </h1>
+    <p class="tagline">tic-tac-toe with a twist</p>
+
+    <section class="play-area" aria-label="Chung Toi board">
+      <div class="board-wrap">
+        <div class="board" id="board">
+          <div class="board-plane">
+          <div class="cell-layer" id="cellLayer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="board-actions">
+        <button class="action" id="rotateBtn" type="button" disabled>Rotate</button>
+        <button class="action primary" id="doneBtn" type="button" disabled>Done</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="status" aria-live="polite">
+        <strong id="headline">White to place</strong>
+        <span id="subline">Click an empty square.</span>
+      </div>
+    </aside>
+
+    <section class="rules" aria-label="How to play">
+      <div class="rules-content">
+        <div class="rules-copy">
+          <p><strong>Object of Chung Toi</strong> - Player to get three game pieces in a row, as in tic-tac-toe, wins. The arrows do not have to line up.</p>
+          <p><strong>Playing Chung Toi</strong> - Players begin by taking turns placing their game pieces on the board until all pieces are played, as seen at right. If neither player succeeds in getting his three pieces in a row then the players continue by taking turns moving their pieces. <strong>A piece can be moved to any open space as long as an arrow on the piece points in the direction of the desired space.</strong></p>
+        </div>
+
+        <div class="rules-grid">
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="setup" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>Players begin by taking turns placing their game pieces on the board until all pieces are played.</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="move-one" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>Player may move one space, or</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="move-two" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>player may move two spaces, or</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="jump" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>player may jump his own piece or his opponent's piece.</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="change-direction" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>Player may change the direction of the arrows when moving, or</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="twist" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>Player may twist the piece and remain in place, or</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="pass" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>player may "pass" by rotating the piece to the original position.</p>
+          </section>
+
+          <section class="rule-card">
+            <div class="rule-board" data-rule-board="final-win" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+            <p>Player wins by getting three in a row.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      Part of Junjie Yang's Board Game Play Lab.
+    </footer>
+  </main>
+
+  <script src="/tablebase-data.js"></script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
