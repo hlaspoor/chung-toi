@@ -6,6 +6,8 @@ const headlineEl = document.getElementById("headline");
 const sublineEl = document.getElementById("subline");
 const rotateBtn = document.getElementById("rotateBtn");
 const doneBtn = document.getElementById("doneBtn");
+const playFirstBtn = document.getElementById("playFirstBtn");
+const playSecondBtn = document.getElementById("playSecondBtn");
 
 const PLAYERS = [
   { id: 0, name: "White", className: "white" },
@@ -19,6 +21,11 @@ const WIN_LINES = [
 const ORTHOGONAL = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const DIAGONAL = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
 const CELL_NAMES = ["top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right"];
+const SAFE_AI_OPENING_DIRECTIONS = [
+  ["O", "D"], ["D"], ["O", "D"],
+  ["D"], ["O", "D"], ["D"],
+  ["O", "D"], ["D"], ["O", "D"]
+];
 const UI_TUNING_MODE = false;
 
 let state = freshState();
@@ -29,8 +36,9 @@ let statusMessage = "";
 const rotationAnimations = new Map();
 const placementAnimations = new Set();
 const movementAnimations = new Map();
-const humanPlayer = 0;
-const aiPlayer = 1;
+let humanPlayer = 0;
+let aiPlayer = 1;
+let gameToken = 0;
 let tablebase = null;
 
 function rulePiece(player = "white", direction = "O") {
@@ -192,6 +200,20 @@ function freshState() {
     winner: null,
     winningLine: null
   };
+}
+
+function startNewGame(nextHumanPlayer) {
+  humanPlayer = nextHumanPlayer;
+  aiPlayer = 1 - humanPlayer;
+  state = freshState();
+  aiThinking = false;
+  statusMessage = "";
+  gameToken += 1;
+  rotationAnimations.clear();
+  placementAnimations.clear();
+  movementAnimations.clear();
+  render();
+  maybeRunAi();
 }
 
 function cloneBoard(board) {
@@ -756,12 +778,52 @@ function chooseBestActionFromActions(actions, value, dtm) {
   return ranked.sort((a, b) => b.distance - a.distance || a.order - b.order)[0].action;
 }
 
+function isAiOpeningGame(game) {
+  return aiPlayer === 0
+    && game.turn === 0
+    && game.phase === "place"
+    && game.left[0] === 3
+    && game.left[1] === 3
+    && game.board.every(piece => !piece);
+}
+
+function openingActionCellAndDirection(action) {
+  if (action.type !== "S") return null;
+  const index = action.after.board.findIndex(piece => piece?.player === 0);
+  if (index < 0) return null;
+  return { index, direction: action.after.board[index].direction };
+}
+
+function chooseRandomSafeOpeningAction(actions) {
+  const safeByCellAndDirection = new Map();
+  for (const action of actions) {
+    const opening = openingActionCellAndDirection(action);
+    if (!opening) continue;
+    if (!SAFE_AI_OPENING_DIRECTIONS[opening.index]?.includes(opening.direction)) continue;
+    safeByCellAndDirection.set(`${opening.index}:${opening.direction}`, action);
+  }
+  const cells = SAFE_AI_OPENING_DIRECTIONS
+    .map((directions, index) => ({ index, directions }))
+    .filter(({ index, directions }) =>
+      directions.some(direction => safeByCellAndDirection.has(`${index}:${direction}`))
+  );
+  if (!cells.length) return null;
+  const { index, directions: allowedDirections } = cells[Math.floor(Math.random() * cells.length)];
+  const directions = allowedDirections.filter(direction => safeByCellAndDirection.has(`${index}:${direction}`));
+  const direction = directions[Math.floor(Math.random() * directions.length)];
+  return safeByCellAndDirection.get(`${index}:${direction}`);
+}
+
 function chooseAiAction() {
   if (UI_TUNING_MODE) return null;
   const game = solverStateFromUi();
   const tablebase = getTablebase();
-  const planned = tablebase.policy.get(keyOfGame(game));
   const actions = solverActions(game);
+  if (isAiOpeningGame(game)) {
+    const opening = chooseRandomSafeOpeningAction(actions);
+    if (opening) return opening;
+  }
+  const planned = tablebase.policy.get(keyOfGame(game));
   if (Number.isInteger(planned) && actions[planned]) return actions[planned];
   if (planned && typeof planned === "object") return planned;
   throw new Error(`No tablebase policy for ${keyOfGame(game)}`);
@@ -796,11 +858,22 @@ function applyAiAction(action) {
 function maybeRunAi() {
   if (UI_TUNING_MODE) return;
   if (!tablebaseReady || !isAiTurn() || aiThinking) return;
+  const token = gameToken;
   aiThinking = true;
   render();
   window.setTimeout(() => {
+    if (token !== gameToken || !isAiTurn()) {
+      aiThinking = false;
+      render();
+      return;
+    }
     try {
       const action = chooseAiAction();
+      if (token !== gameToken || !isAiTurn()) {
+        aiThinking = false;
+        render();
+        return;
+      }
       aiThinking = false;
       applyAiAction(action);
     } catch (error) {
@@ -1016,6 +1089,8 @@ function renderStatus() {
 function renderControls() {
   rotateBtn.disabled = !canRotateAction();
   doneBtn.disabled = !state.pending || state.winner !== null || isBusy();
+  playFirstBtn.setAttribute("aria-pressed", String(humanPlayer === 0));
+  playSecondBtn.setAttribute("aria-pressed", String(humanPlayer === 1));
 }
 
 function render() {
@@ -1026,6 +1101,8 @@ function render() {
 
 rotateBtn.addEventListener("click", rotateAction);
 doneBtn.addEventListener("click", finishPending);
+playFirstBtn.addEventListener("click", () => startNewGame(0));
+playSecondBtn.addEventListener("click", () => startNewGame(1));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") cancelInteraction();
 });

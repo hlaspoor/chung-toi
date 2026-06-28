@@ -3,9 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151b19">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <title>Chung Toi</title>
+  <style>
+    html,
+    body {
+      background: #151b19;
+    }
+  </style>
 </head>
 <body>
   <main class="app">
@@ -32,6 +39,10 @@
       <div class="status" aria-live="polite">
         <strong id="headline">White to place</strong>
         <span id="subline">Click an empty square.</span>
+      </div>
+      <div class="new-game-actions" aria-label="New game">
+        <button class="action" id="playFirstBtn" type="button">Play First</button>
+        <button class="action" id="playSecondBtn" type="button">Play Second</button>
       </div>
     </aside>
 

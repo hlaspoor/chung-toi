@@ -454,6 +454,30 @@ body {
   border-left: 1px solid var(--panel-line);
 }
 
+.new-game-actions {
+  width: min(100%, 292px);
+  justify-self: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.new-game-actions .action {
+  border: 0;
+  min-height: 36px;
+  background: var(--button);
+}
+
+.new-game-actions .action + .action {
+  border-left: 1px solid var(--panel-line);
+}
+
+.new-game-actions .action:first-child {
+  background: var(--focus);
+  color: var(--focus-ink);
+}
+
 .action:disabled {
   opacity: .42;
   cursor: not-allowed;
