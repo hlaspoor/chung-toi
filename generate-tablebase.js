@@ -279,13 +279,42 @@ function packPolicy(policy) {
   return Buffer.from(bytes).toString("base64");
 }
 
+function pushVarint(bytes, value) {
+  let remaining = value;
+  while (remaining >= 128) {
+    bytes.push((remaining & 127) | 128);
+    remaining = Math.floor(remaining / 128);
+  }
+  bytes.push(remaining);
+}
+
+function packEvaluation(value, dtm) {
+  const records = Array.from(value, ([key, outcome]) => {
+    const distance = dtm.get(key) || 0;
+    const info = distance * 3 + (outcome + 1);
+    return [keyToCode(key), info];
+  }).sort((a, b) => a[0] - b[0]);
+
+  const bytes = [];
+  let previousCode = 0;
+  for (const [code, info] of records) {
+    pushVarint(bytes, code - previousCode);
+    pushVarint(bytes, info);
+    previousCode = code;
+  }
+  return Buffer.from(bytes).toString("base64");
+}
+
 const tablebase = buildTablebase();
-const payload = packPolicy(tablebase.policy);
-const chunks = payload.match(/.{1,8192}/g) || [];
-const body = `self.CHUNG_TOI_TABLEBASE=${JSON.stringify(chunks)}.join("");\n`;
+const tablebaseData = {
+  policyPacked: packPolicy(tablebase.policy),
+  evaluationPacked: packEvaluation(tablebase.value, tablebase.dtm)
+};
+const body = `self.CHUNG_TOI_TABLEBASE=${JSON.stringify(tablebaseData)};\n`;
 
 fs.mkdirSync("public", { recursive: true });
 fs.writeFileSync("public/tablebase-data.js", body);
+fs.writeFileSync("tablebase-data.js", body);
 
 console.log(`Wrote public/tablebase-data.js`);
 console.log(`policy=${tablebase.policy.size} bytes=${Buffer.byteLength(body)}`);

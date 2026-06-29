@@ -8,6 +8,11 @@ const rotateBtn = document.getElementById("rotateBtn");
 const doneBtn = document.getElementById("doneBtn");
 const playFirstBtn = document.getElementById("playFirstBtn");
 const playSecondBtn = document.getElementById("playSecondBtn");
+const solutionHeadlineEl = document.getElementById("solutionHeadline");
+const solutionBestEl = document.getElementById("solutionBest");
+const solutionDetailEl = document.getElementById("solutionDetail");
+const solutionChoicesTitleEl = document.getElementById("solutionChoicesTitle");
+const solutionTableEl = document.getElementById("solutionTable");
 
 const PLAYERS = [
   { id: 0, name: "White", className: "white" },
@@ -21,6 +26,7 @@ const WIN_LINES = [
 const ORTHOGONAL = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const DIAGONAL = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
 const CELL_NAMES = ["top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right"];
+const CELL_COORDS = ["a3", "b3", "c3", "a2", "b2", "c2", "a1", "b1", "c1"];
 const SAFE_AI_OPENING_DIRECTIONS = [
   ["O", "D"], ["D"], ["O", "D"],
   ["D"], ["O", "D"], ["D"],
@@ -227,6 +233,24 @@ function solverStateFromUi() {
     phase: state.phase,
     left: [...state.left]
   };
+}
+
+function solutionStateFromUi() {
+  const game = solverStateFromUi();
+  const pending = state.pending;
+  if (!pending) return game;
+
+  if (pending.type === "place") {
+    game.board[pending.index] = null;
+    game.left[game.turn] += 1;
+  } else if (pending.type === "move") {
+    game.board[pending.from] = { ...pending.originalPiece };
+    game.board[pending.to] = null;
+  } else if (pending.type === "rotate") {
+    game.board[pending.index] = { ...pending.originalPiece };
+  }
+  if (game.left[0] > 0 || game.left[1] > 0) game.phase = "place";
+  return game;
 }
 
 function isAiTurn() {
@@ -713,6 +737,51 @@ function unpackPackedPolicy(packed) {
   return policy;
 }
 
+function readPackedVarint(binary, cursor) {
+  let value = 0;
+  let shift = 1;
+  let index = cursor;
+  while (index < binary.length) {
+    const byte = binary.charCodeAt(index);
+    value += (byte & 127) * shift;
+    index += 1;
+    if (!(byte & 128)) return { value, cursor: index };
+    shift *= 128;
+  }
+  throw new Error("Invalid tablebase-data.js");
+}
+
+function unpackTablebaseEvaluation(source) {
+  if (Array.isArray(source.evaluation)) {
+    return {
+      value: new Map(source.evaluation.map(([key, outcome]) => [key, outcome])),
+      dtm: new Map(source.dtm || [])
+    };
+  }
+  const packed = typeof source === "object" ? source.evaluationPacked : null;
+  if (typeof packed !== "string") {
+    return { value: new Map(), dtm: new Map() };
+  }
+  const binary = atob(packed);
+  const value = new Map();
+  const dtm = new Map();
+  let previousCode = 0;
+  let cursor = 0;
+  while (cursor < binary.length) {
+    const delta = readPackedVarint(binary, cursor);
+    cursor = delta.cursor;
+    const info = readPackedVarint(binary, cursor);
+    cursor = info.cursor;
+    previousCode += delta.value;
+    const key = keyFromCode(previousCode);
+    const outcome = (info.value % 3) - 1;
+    const distance = Math.floor(info.value / 3);
+    value.set(key, outcome);
+    if (distance > 0) dtm.set(key, distance);
+  }
+  return { value, dtm };
+}
+
 function keyFromCode(code) {
   const boardCode = code % 1953125;
   let rest = Math.floor(code / 1953125);
@@ -735,6 +804,16 @@ function getTablebase() {
     };
   }
   return tablebase;
+}
+
+function ensureTablebaseEvaluation() {
+  const loaded = getTablebase();
+  if (!loaded.value || !loaded.dtm) {
+    const evaluation = unpackTablebaseEvaluation(self.CHUNG_TOI_TABLEBASE);
+    loaded.value = evaluation.value;
+    loaded.dtm = evaluation.dtm;
+  }
+  return loaded;
 }
 
 function warmTablebase() {
@@ -1007,6 +1086,130 @@ function drawCoords(index) {
   return parts.join("");
 }
 
+function directionWord(direction) {
+  return direction === "D" ? "diagonal" : "orthogonal";
+}
+
+function actionLabel(game, action) {
+  const after = action.after.board;
+  const removed = [];
+  const added = [];
+  const changed = [];
+  game.board.forEach((beforePiece, index) => {
+    const afterPiece = after[index];
+    if (beforePiece && !afterPiece) removed.push(index);
+    if (!beforePiece && afterPiece) added.push(index);
+    if (beforePiece && afterPiece
+      && beforePiece.player === afterPiece.player
+      && beforePiece.direction !== afterPiece.direction) {
+      changed.push(index);
+    }
+  });
+
+  if (game.phase === "place" && added.length === 1) {
+    const index = added[0];
+    return `${CELL_COORDS[index]}, ${directionWord(after[index].direction)}`;
+  }
+  if (removed.length === 1 && added.length === 1) {
+    const to = added[0];
+    return `${CELL_COORDS[removed[0]]} -> ${CELL_COORDS[to]}, ${directionWord(after[to].direction)}`;
+  }
+  if (changed.length === 1) return `rotate ${CELL_COORDS[changed[0]]}`;
+  return action.desc;
+}
+
+function rankedActionsForGame(game, tablebase) {
+  return solverActions(game).map((action, order) => {
+    const nextKey = action.type === "S" ? keyOfGame(action.next) : null;
+    const score = action.type === "W" ? 1 : -(tablebase.value.get(nextKey) || 0);
+    const storedDtm = action.type === "W" ? 0 : tablebase.dtm.get(nextKey);
+    const distance = score === 0 ? null : (storedDtm || 0) + 1;
+    return {
+      action,
+      order,
+      score,
+      distance,
+      label: actionLabel(game, action)
+    };
+  }).sort((a, b) => {
+    if (a.score !== b.score) return b.score - a.score;
+    if (a.score === 1) return a.distance - b.distance || a.order - b.order;
+    if (a.score === -1) return b.distance - a.distance || a.order - b.order;
+    return a.order - b.order;
+  });
+}
+
+function resultText(item) {
+  if (item.score === 1) return `Wins in ${item.distance}`;
+  if (item.score === -1) return `Loses in ${item.distance}`;
+  return "Draws";
+}
+
+function renderSolutionTable(items) {
+  const rows = items.map(item => `
+    <div class="solution-row" role="row">
+      <span class="solution-move" role="cell">${item.label}</span>
+      <span class="solution-result" role="cell">${resultText(item)}</span>
+    </div>
+  `).join("");
+  solutionTableEl.innerHTML = `
+    <div class="solution-row solution-head" role="row">
+      <span class="solution-move" role="columnheader">Move</span>
+      <span class="solution-result" role="columnheader">Result</span>
+    </div>
+    ${rows || '<div class="solution-empty">No legal moves.</div>'}
+  `;
+}
+
+function renderSolutionPanel() {
+  if (!solutionHeadlineEl) return;
+  if (!window.matchMedia("(min-width: 960px)").matches) return;
+  if (state.winner !== null) {
+    solutionHeadlineEl.textContent = `${PLAYERS[state.winner].name} has won`;
+    solutionBestEl.textContent = "The game is over.";
+    solutionDetailEl.textContent = "Three in a row.";
+    solutionChoicesTitleEl.textContent = "Legal moves";
+    renderSolutionTable([]);
+    return;
+  }
+  if (!tablebaseReady) {
+    solutionHeadlineEl.textContent = "Solved position unavailable";
+    solutionBestEl.textContent = "Best move: --";
+    solutionDetailEl.textContent = "The tablebase is still loading.";
+    solutionChoicesTitleEl.textContent = "Legal moves";
+    renderSolutionTable([]);
+    return;
+  }
+  if (aiThinking || isAiTurn()) return;
+
+  const game = solutionStateFromUi();
+  const tablebase = ensureTablebaseEvaluation();
+  const key = keyOfGame(game);
+  const outcome = tablebase.value.get(key) || 0;
+  const ranked = rankedActionsForGame(game, tablebase);
+  const best = ranked[0];
+  const player = PLAYERS[game.turn];
+  const opponent = PLAYERS[1 - game.turn];
+
+  if (outcome === 1) {
+    solutionHeadlineEl.textContent = `${player.name} is winning`;
+    solutionBestEl.textContent = best ? `Best move: ${best.label}` : "Best move: --";
+    solutionDetailEl.textContent = best ? `Wins in ${best.distance}.` : "Forced win.";
+    solutionChoicesTitleEl.textContent = "Legal moves";
+  } else if (outcome === -1) {
+    solutionHeadlineEl.textContent = `${opponent.name} is winning`;
+    solutionBestEl.textContent = best ? `Best defense: ${best.label}` : "Best defense: --";
+    solutionDetailEl.textContent = best ? `Best defense loses in ${best.distance}.` : "Forced loss.";
+    solutionChoicesTitleEl.textContent = "Legal moves";
+  } else {
+    solutionHeadlineEl.textContent = "Drawn with perfect play";
+    solutionBestEl.textContent = best ? `Best move: ${best.label}` : "Best move: --";
+    solutionDetailEl.textContent = "No forced win.";
+    solutionChoicesTitleEl.textContent = "Legal moves";
+  }
+  renderSolutionTable(ranked);
+}
+
 function renderBoard() {
   const legal = state.pending
     ? pendingLegalTargets()
@@ -1096,6 +1299,7 @@ function renderControls() {
 function render() {
   renderBoard();
   renderStatus();
+  renderSolutionPanel();
   renderControls();
 }
 
@@ -1106,6 +1310,7 @@ playSecondBtn.addEventListener("click", () => startNewGame(1));
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") cancelInteraction();
 });
+window.addEventListener("resize", renderSolutionPanel);
 
 renderRuleBoards();
 render();

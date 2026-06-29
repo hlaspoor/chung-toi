@@ -21,19 +21,33 @@
     </h1>
     <p class="tagline">tic-tac-toe with a twist</p>
 
-    <section class="play-area" aria-label="Chung Toi board">
-      <div class="board-wrap">
-        <div class="board" id="board">
-          <div class="board-plane">
-          <div class="cell-layer" id="cellLayer"></div>
+    <div class="play-layout">
+      <section class="play-area" aria-label="Chung Toi board">
+        <div class="board-wrap">
+          <div class="board" id="board">
+            <div class="board-plane">
+            <div class="cell-layer" id="cellLayer"></div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="board-actions">
-        <button class="action" id="rotateBtn" type="button" disabled>Rotate</button>
-        <button class="action primary" id="doneBtn" type="button" disabled>Done</button>
-      </div>
-    </section>
+        <div class="board-actions">
+          <button class="action" id="rotateBtn" type="button" disabled>Rotate</button>
+          <button class="action primary" id="doneBtn" type="button" disabled>Done</button>
+        </div>
+      </section>
+
+      <aside class="solution-panel" aria-label="Solved position">
+        <div class="solution-summary">
+          <strong id="solutionHeadline">Solved position</strong>
+          <span id="solutionBest">Best move: --</span>
+          <span id="solutionDetail">Perfect-play result will appear here.</span>
+        </div>
+        <div class="solution-choices">
+          <strong id="solutionChoicesTitle">Legal moves</strong>
+          <div class="solution-table" id="solutionTable" role="table" aria-label="Best solved moves"></div>
+        </div>
+      </aside>
+    </div>
 
     <aside class="panel">
       <div class="status" aria-live="polite">
