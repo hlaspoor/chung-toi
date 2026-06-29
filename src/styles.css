@@ -69,6 +69,7 @@ body {
   display: grid;
   place-items: start center;
   padding: clamp(32px, 8vh, 72px) 14px 32px;
+  user-select: none;
 }
 
 .app {
@@ -906,17 +907,27 @@ body {
   transform: rotate(18deg);
 }
 
-@media (min-width: 1296px) {
+@media (min-width: 1340px) {
   .solution-panel {
-    position: fixed;
-    right: 24px;
-    top: calc(clamp(32px, 8vh, 72px) + 118px);
+    position: absolute;
+    left: calc(100% + 18px);
+    top: 118px;
     width: 250px;
-    padding: 0 0 0 20px;
-    border-left: 1px solid var(--solution-line);
+    padding: 0 0 18px 20px;
     display: grid;
     align-content: start;
     gap: 18px;
+  }
+
+  .solution-panel::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 18px;
+    width: 1px;
+    background: var(--solution-line);
+    pointer-events: none;
   }
 }
 

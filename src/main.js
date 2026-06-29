@@ -1163,7 +1163,7 @@ function renderSolutionTable(items) {
 
 function renderSolutionPanel() {
   if (!solutionHeadlineEl) return;
-  if (!window.matchMedia("(min-width: 960px)").matches) return;
+  if (!window.matchMedia("(min-width: 1340px)").matches) return;
   if (state.winner !== null) {
     solutionHeadlineEl.textContent = `${PLAYERS[state.winner].name} has won`;
     solutionBestEl.textContent = "The game is over.";
