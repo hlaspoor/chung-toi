@@ -579,16 +579,23 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  border: 2px solid var(--board-line);
-  background: var(--board);
+  border: 2px solid rgba(138, 146, 135, .44);
+  background: #303934;
   position: relative;
   justify-self: center;
+  --rule-cell-line: rgba(138, 146, 135, .36);
+  --rule-white-piece: #b8afa1;
+  --rule-white-mark: rgba(34, 34, 34, .68);
+  --rule-sage-piece: #536f4c;
+  --rule-sage-mark: rgba(11, 22, 9, .66);
+  --rule-accent: rgba(138, 146, 135, .58);
+  --rule-arrow: rgba(231, 210, 174, .42);
 }
 
 .rule-board span {
   border: 0;
-  border-right: 1px solid var(--cell-line);
-  border-bottom: 1px solid var(--cell-line);
+  border-right: 1px solid var(--rule-cell-line);
+  border-bottom: 1px solid var(--rule-cell-line);
   display: grid;
   place-items: center;
   position: relative;
@@ -604,25 +611,26 @@ body {
 }
 
 .rule-board span.rule-target {
-  background: var(--cell-selected);
+  background: rgba(74, 68, 54, .66);
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .28);
 }
 
 .rule-board span.rule-win {
-  background: var(--cell-winning);
+  background: rgba(35, 74, 67, .62);
 }
 
 .rule-piece {
   width: 80%;
   aspect-ratio: 1;
   display: block;
-  --piece-fill: var(--white-piece);
-  --piece-mark: var(--white-mark);
+  opacity: .78;
+  --piece-fill: var(--rule-white-piece);
+  --piece-mark: var(--rule-white-mark);
 }
 
 .rule-piece.red {
-  --piece-fill: var(--sage-piece);
-  --piece-mark: var(--sage-mark);
+  --piece-fill: var(--rule-sage-piece);
+  --piece-mark: var(--rule-sage-mark);
   --piece-stroke: var(--piece-stroke);
 }
 
@@ -653,7 +661,7 @@ body {
   position: absolute;
   width: 82%;
   height: 5px;
-  background: var(--focus);
+  background: var(--rule-accent);
   left: 9%;
   top: calc(50% - 2px);
 }
@@ -681,7 +689,7 @@ body {
 .rule-motion {
   position: absolute;
   z-index: 6;
-  color: var(--arrow);
+  color: var(--rule-arrow);
   font-size: 20px;
   font-weight: 800;
   line-height: 1;
@@ -696,7 +704,7 @@ body {
 }
 
 .rule-motion-shape {
-  fill: var(--arrow);
+  fill: var(--rule-arrow);
 }
 
 .rule-board-arrow {
@@ -711,13 +719,13 @@ body {
 
 .rule-board-arrow path {
   fill: none;
-  stroke: var(--arrow);
+  stroke: var(--rule-arrow);
   stroke-width: 2;
   stroke-linecap: round;
 }
 
 .rule-board-arrow marker path {
-  fill: var(--arrow);
+  fill: var(--rule-arrow);
   stroke: none;
 }
 
@@ -728,7 +736,7 @@ body {
   top: -10px;
   width: 33.333%;
   height: 0;
-  border-top: 2px solid var(--arrow);
+  border-top: 2px solid var(--rule-arrow);
   pointer-events: none;
 }
 
@@ -745,7 +753,7 @@ body {
   height: 0;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 12px solid var(--arrow);
+  border-left: 12px solid var(--rule-arrow);
 }
 
 .rule-side-curve {
@@ -775,13 +783,13 @@ body {
 
 .rule-side-curve path {
   fill: none;
-  stroke: var(--arrow);
+  stroke: var(--rule-arrow);
   stroke-width: 2;
   stroke-linecap: butt;
 }
 
 .rule-side-curve marker path {
-  fill: var(--arrow);
+  fill: var(--rule-arrow);
   stroke: none;
 }
 
