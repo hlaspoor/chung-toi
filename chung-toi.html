@@ -90,18 +90,15 @@
     .app-title {
       margin: 0;
       text-align: center;
-      line-height: 0;
-    }
-
-    .app-title img {
-      width: min(100%, 240px);
-      height: auto;
-      display: inline-block;
-      filter: invert(82%) sepia(12%) saturate(430%) hue-rotate(347deg) brightness(92%) contrast(88%);
+      font-family: "Proza", sans-serif;
+      font-size: clamp(42px, 8vw, 64px);
+      font-style: normal;
+      font-weight: 800;
+      line-height: .95;
     }
 
     .tagline {
-      margin: -6px 0 2px;
+      margin: -2px 0 2px;
       color: rgba(184, 170, 151, .78);
       font-size: 14px;
       font-weight: 400;
@@ -219,22 +216,14 @@
 
     .cell-coord {
       position: absolute;
+      right: 5px;
+      bottom: 4px;
       color: var(--muted);
       font-family: "Trebuchet MS", sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1;
       pointer-events: none;
       z-index: 1;
-    }
-
-    .cell-coord.v {
-      top: 5px;
-      left: 5px;
-    }
-
-    .cell-coord.h {
-      right: 5px;
-      bottom: 4px;
     }
 
     .piece {
@@ -823,9 +812,7 @@
 </head>
 <body>
   <main class="app">
-    <h1 class="app-title">
-      <img src="logo.svg" alt="Chung Toi">
-    </h1>
+    <h1 class="app-title">Chung Toi</h1>
     <p class="tagline">tic-tac-toe with a twist</p>
 
     <section class="play-area" aria-label="Chung Toi board">
@@ -1867,10 +1854,7 @@
 
     function drawCoords(index) {
       const [row, col] = rowCol(index);
-      const parts = [];
-      if (col === 0) parts.push(`<span class="cell-coord v">${3 - row}</span>`);
-      if (row === 2) parts.push(`<span class="cell-coord h">${String.fromCharCode(97 + col)}</span>`);
-      return parts.join("");
+      return `<span class="cell-coord" aria-hidden="true">${String.fromCharCode(97 + col)}${3 - row}</span>`;
     }
 
     function renderBoard() {

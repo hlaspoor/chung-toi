@@ -1080,10 +1080,7 @@ function drawPiece(piece, index) {
 
 function drawCoords(index) {
   const [row, col] = rowCol(index);
-  const parts = [];
-  if (col === 0) parts.push(`<span class="cell-coord v">${3 - row}</span>`);
-  if (row === 2) parts.push(`<span class="cell-coord h">${String.fromCharCode(97 + col)}</span>`);
-  return parts.join("");
+  return `<span class="cell-coord" aria-hidden="true">${String.fromCharCode(97 + col)}${3 - row}</span>`;
 }
 
 function directionWord(direction) {
