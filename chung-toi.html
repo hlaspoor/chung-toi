@@ -976,9 +976,17 @@
                 stroke="var(--piece-stroke, #222)"
                 stroke-width="5.8"
                 stroke-linejoin="round"/>
-              <g stroke="var(--piece-mark)" stroke-width="8" stroke-linecap="round" opacity=".84">
-                <line x1="31" y1="50" x2="69" y2="50"/>
-                <line x1="50" y1="31" x2="50" y2="69"/>
+              <g class="piece-mark" opacity=".84">
+                <g stroke="var(--piece-mark)" stroke-width="4" stroke-linecap="round">
+                  <line x1="34" y1="50" x2="66" y2="50"/>
+                  <line x1="50" y1="34" x2="50" y2="66"/>
+                </g>
+                <g fill="var(--piece-mark)">
+                  <path d="M15 50 Q15 48.8 16.4 48.2 L32.6 43.9 Q35 43.2 35 45.5 V54.5 Q35 56.8 32.6 56.1 L16.4 51.8 Q15 51.2 15 50 Z"/>
+                  <path d="M85 50 Q85 48.8 83.6 48.2 L67.4 43.9 Q65 43.2 65 45.5 V54.5 Q65 56.8 67.4 56.1 L83.6 51.8 Q85 51.2 85 50 Z"/>
+                  <path d="M50 15 Q48.8 15 48.2 16.4 L43.9 32.6 Q43.2 35 45.5 35 H54.5 Q56.8 35 56.1 32.6 L51.8 16.4 Q51.2 15 50 15 Z"/>
+                  <path d="M50 85 Q48.8 85 48.2 83.6 L43.9 67.4 Q43.2 65 45.5 65 H54.5 Q56.8 65 56.1 67.4 L51.8 83.6 Q51.2 85 50 85 Z"/>
+                </g>
               </g>
             </g>
           </svg>
@@ -1848,9 +1856,17 @@
                 stroke="var(--piece-stroke)"
                 stroke-width="5"
                 stroke-linejoin="round"/>
-              <g class="piece-mark" stroke="var(--piece-mark)" stroke-width="8" stroke-linecap="round" opacity=".84">
-                <line x1="31" y1="50" x2="69" y2="50"/>
-                <line x1="50" y1="31" x2="50" y2="69"/>
+              <g class="piece-mark" opacity=".84">
+                <g stroke="var(--piece-mark)" stroke-width="4" stroke-linecap="round">
+                  <line x1="34" y1="50" x2="66" y2="50"/>
+                  <line x1="50" y1="34" x2="50" y2="66"/>
+                </g>
+                <g fill="var(--piece-mark)">
+                  <path d="M15 50 Q15 48.8 16.4 48.2 L32.6 43.9 Q35 43.2 35 45.5 V54.5 Q35 56.8 32.6 56.1 L16.4 51.8 Q15 51.2 15 50 Z"/>
+                  <path d="M85 50 Q85 48.8 83.6 48.2 L67.4 43.9 Q65 43.2 65 45.5 V54.5 Q65 56.8 67.4 56.1 L83.6 51.8 Q85 51.2 85 50 Z"/>
+                  <path d="M50 15 Q48.8 15 48.2 16.4 L43.9 32.6 Q43.2 35 45.5 35 H54.5 Q56.8 35 56.1 32.6 L51.8 16.4 Q51.2 15 50 15 Z"/>
+                  <path d="M50 85 Q48.8 85 48.2 83.6 L43.9 67.4 Q43.2 65 45.5 65 H54.5 Q56.8 65 56.1 67.4 L51.8 83.6 Q51.2 85 50 85 Z"/>
+                </g>
               </g>
             </g>
           </svg>
